@@ -20,6 +20,11 @@ public class ServidorImpl implements IMensagem {
         alocados = new ArrayList<>();
     }
 
+    public static void main(String[] args) {
+        ServidorImpl servidor = new ServidorImpl();
+        servidor.iniciar();
+    }
+
     //Cliente: invoca o metodo remoto 'enviar'
     //Servidor: invoca o metodo local 'enviar'
     @Override
@@ -38,24 +43,20 @@ public class ServidorImpl implements IMensagem {
     public String parserJSON(String json) {
         String result = "{\"result\":";
         try {
-            String jsonObjAttributes[] = json.replace("\"", "")
-                    .replace("{", "")
-                    .replace("}", "")
-                    .split(",");
+            String jsonObjAttributes[] = json.replace("\"", "").replace("{", "").replace("}", "").split(",");
             String method = jsonObjAttributes[0].replace("method:", "");
 
             if (method.equals("read")) {
                 String fortune = principal.read();
                 result += "\"" + fortune + "\"}";
             } else if (method.equals("write")) {
-                String fortune = jsonObjAttributes[1].replace("args:[", "")
-                        .replace("]", "") + "\n";
+                String fortune = jsonObjAttributes[1].replace("args:[", "").replace("]", "") + "\n";
                 principal.write(fortune);
                 result += "\"" + fortune + "\"}";
             } else {
                 result += "\"false\"}";
             }
-        } catch(Exception error) {
+        } catch (Exception error) {
             result += "\"false\"}";
         }
 
@@ -65,7 +66,7 @@ public class ServidorImpl implements IMensagem {
     public void iniciar() {
         try {
             //TODO: Adquire aleatoriamente um 'nome' do arquivo Peer.java
-
+            Peer[] listaPeers = Peer.values();
             Registry servidorRegistro;
             try {
                 servidorRegistro = LocateRegistry.createRegistry(1099);
@@ -78,14 +79,14 @@ public class ServidorImpl implements IMensagem {
                 System.out.println(listaAlocados[i] + " ativo.");
 
             SecureRandom sr = new SecureRandom();
-            Peer peer = listaPeers.get(sr.nextInt(listaPeers.size()));
+            Peer peer = listaPeers[sr.nextInt(listaPeers.length)];
 
             int tentativas = 0;
             boolean repetido = true;
             boolean cheio = false;
             while (repetido && !cheio) {
                 repetido = false;
-                peer = listaPeers.get(sr.nextInt(listaPeers.size()));
+                peer = listaPeers[sr.nextInt(listaPeers.length)];
                 for (int i = 0; i < listaAlocados.length && !repetido; i++) {
 
                     if (listaAlocados[i].equals(peer.getNome())) {
@@ -100,7 +101,7 @@ public class ServidorImpl implements IMensagem {
                 //Verifica se o registro estah cheio (todos alocados)
                 if (listaAlocados.length > 0 && //Para o caso inicial em que nao ha servidor alocado,
                         //caso contrario, o teste abaixo sempre serah true
-                        tentativas == listaPeers.size()) {
+                        tentativas == listaPeers.length) {
                     cheio = true;
                 }
             }
@@ -117,10 +118,5 @@ public class ServidorImpl implements IMensagem {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args) {
-        ServidorImpl servidor = new ServidorImpl();
-        servidor.iniciar();
     }
 }

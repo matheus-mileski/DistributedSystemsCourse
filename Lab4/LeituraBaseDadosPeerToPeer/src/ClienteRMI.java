@@ -11,14 +11,41 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-
 public class ClienteRMI {
 
+    // Método para realizar a leitura de uma fortuna
+    public void readFortune(IMensagem stub) {
+        try {
+            // Implementação do método 'read' para a leitura de 1 (uma) fortuna
+            // aleatória do servidor.
+            Mensagem mensagem = new Mensagem("", "1"); // Criar a mensagem com a operação 'read'
+            Mensagem resposta = stub.enviar(mensagem); // Invocar o método remoto
+            System.out.println("Fortuna recebida: " + resposta.getMensagem()); // Exibir a fortuna recebida
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Método para realizar a escrita de uma fortuna
+    public void writeFortune(IMensagem stub) {
+        try {
+            // Implementação do método 'write' para a escrita de 1 (uma) fortuna
+            // aleatória no servidor.
+            Scanner sc = new Scanner(System.in);
+            System.out.println("Digite uma fortuna para adicionar: ");
+            String novaFortuna = sc.nextLine(); // Captura a fortuna digitada pelo usuário
+            Mensagem mensagemEscrita = new Mensagem(novaFortuna, "2"); // Criar a mensagem com a operação 'write'
+            stub.enviar(mensagemEscrita); // Invocar o método remoto
+            System.out.println("Fortuna escrita com sucesso!"); // Exibir confirmação de escrita bem-sucedida
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public static void main(String[] args) {
 
         //TODO: Obter a Lista de pares disponiveis do arquivo Peer.java
-
-
+        Peer[] listaPeers = Peer.values();
+        ClienteRMI cliente = new ClienteRMI();
         try {
 
             Registry registro = LocateRegistry.getRegistry("127.0.0.1", 1099);
@@ -32,7 +59,7 @@ public class ClienteRMI {
 
             boolean conectou = false;
             while (!conectou) {
-                peer = listaPeers.get(sr.nextInt(listaPeers.size()));
+                peer = listaPeers[sr.nextInt(listaPeers.length)];
                 try {
                     stub = (IMensagem) registro.lookup(peer.getNome());
                     conectou = true;
@@ -55,19 +82,11 @@ public class ClienteRMI {
                 opcao = leitura.next();
                 switch (opcao) {
                     case "1": {
-                        Mensagem mensagem = new Mensagem("", opcao);
-                        Mensagem resposta = stub.enviar(mensagem); //dentro da mensagem tem o campo 'read'
-                        System.out.println(resposta.getMensagem());
+                        cliente.readFortune(stub);
                         break;
                     }
                     case "2": {
-                        //Monta a mensagem
-                        System.out.print("Add fortune: ");
-                        String fortune = leitura.next();
-
-                        Mensagem mensagem = new Mensagem(fortune, opcao);
-                        Mensagem resposta = stub.enviar(mensagem); //dentro da mensagem tem o campo 'write'
-                        System.out.println(resposta.getMensagem());
+                        cliente.writeFortune(stub);
                         break;
                     }
                 }

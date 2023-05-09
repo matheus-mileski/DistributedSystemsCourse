@@ -11,13 +11,11 @@ public enum Peer {
         public String getNome() {
             return "PEER1";
         }
-    },
-    PEER2 {
+    }, PEER2 {
         public String getNome() {
             return "PEER2";
         }
-    },
-    PEER3 {
+    }, PEER3 {
         public String getNome() {
             return "PEER3";
         }
